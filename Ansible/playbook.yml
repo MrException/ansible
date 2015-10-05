@@ -1,0 +1,30 @@
+---
+- hosts: dev
+  sudo: yes
+  gather_facts: yes
+  
+  tasks:
+  - name: Add newer vim ppa
+    apt_repository: repo='ppa:pkg-vim/vim-daily'
+    
+  - name: Import the NodeSource GPG key into apt
+    apt_key: url=https://deb.nodesource.com/gpgkey/nodesource.gpg.key state=present
+    
+  - name: Add NodeSource deb repository
+    apt_repository: repo='deb https://deb.nodesource.com/node_4.x {{ ansible_distribution_release }} main' state=present
+
+  - name: Add NodeSource deb-src repository
+    apt_repository: repo='deb-src https://deb.nodesource.com/node_4.x {{ ansible_distribution_release }} main' state=present
+  
+  - name: update system
+    apt: upgrade=safe update_cache=yes
+  
+  - name: install dev packages
+    apt: name={{item}} state=present
+    with_items:
+      - build-essential
+      - vim
+      - zsh
+      - tmux
+      - git
+      - nodejs
