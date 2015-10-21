@@ -1,0 +1,36 @@
+---
+- hosts: prod
+  sudo: yes
+  gather_facts: yes
+  
+  tasks:
+  - name: update system
+    apt: upgrade=safe update_cache=yes
+
+  - name: install postgres contrib
+    apt: name={{item}} state=present
+    with_items:
+        - postgresql
+        - postgresql-contrib
+        - libpq-dev
+        - python-psycopg2
+
+- hosts: prod
+  sudo: yes
+  sudo_user: postgres
+  gather_facts: no
+
+  vars:
+    dbname: spring-boot
+    dbuser: dbuser
+    dbpassword: dbpassword
+
+  tasks:
+  - name: ensure database is created
+    postgresql_db: name={{dbname}}
+
+  - name: ensure user has access to database
+    postgresql_user: db={{dbname}} name={{dbuser}} password={{dbpassword}} priv=ALL
+
+  - name: ensure user does not have unnecessary privilege
+    postgresql_user: name={{dbuser}} role_attr_flags=NOSUPERUSER,NOCREATEDB
